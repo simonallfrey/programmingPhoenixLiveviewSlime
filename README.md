@@ -48,6 +48,17 @@ lib/pentoslime_web/live/wrong_live.ex
 + use PentoslimeWeb, :live_view
 ```
 
+Not sure if the following was necessary
+
+config/config.exs
+
+``` elixir
+config :phoenix, :template_engines,
+  slim: PhoenixSlime.Engine,
+  slime: PhoenixSlime.Engine,
+  slimleex: PhoenixSlime.LiveViewEngine # If you want to use LiveView
+```
+
 ## Generic instructions
 
 
