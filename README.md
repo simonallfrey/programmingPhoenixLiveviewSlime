@@ -48,6 +48,8 @@ lib/pentoslime_web/live/wrong_live.ex
 + use PentoslimeWeb, :live_view
 ```
 
+## Generic instructions
+
 
 To start your Phoenix server:
 
