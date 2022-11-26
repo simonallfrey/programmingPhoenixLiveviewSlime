@@ -3,7 +3,7 @@ defmodule PentoslimeWeb.WrongLive do
   use PentoslimeWeb, :live_view
 
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, score: 0, message: "Make a guess:")}
+    {:ok, assign(socket, score: 0, message: "Hi! Make a guess:", target: :rand.uniform(10))}
   end
 
   def render(assigns) do
@@ -12,21 +12,34 @@ defmodule PentoslimeWeb.WrongLive do
     h2 #{@message}
     h2
      = for n <- 1..10 do
-       a href="#" phx-click="guess" phx-value-number="#{n}" #{n}&nbsp
+       a href="#" phx-click="guess" phx-value-guess="#{n}" phx-value-target="#{@target}" #{n}&nbsp
     """
-    # a href="#" phx-click="guess" phx-value-number={n} #{n}
+    # a href="#" phx-click="guess" phx-value-guess={n} #{n}
   end
 
-  def handle_event("guess", %{"number" => guess}=data, socket) do
-    message = "Your guess: #{guess}. Wrong. Guess again. "
-    score = socket.assigns.score - 1
-
-    {
-      :noreply,
-      assign(
-        socket,
-        message: message,
-        score: score)}
+  def handle_event("guess", %{"guess" => guess, "target" => guess}, socket) do
+    {:noreply, assign(socket,
+      message: "Your guess: #{guess}. Correct. Guess again. ",
+      score: socket.assigns.score + 1)}
+  end
+  def handle_event("guess", %{"guess" => guess}, socket) do
+    {:noreply, assign(socket,
+      message: "Your guess: #{guess}. Incorrect. Guess again. ",
+      score: socket.assigns.score - 1)}
   end
 
-end
+  # def handle_event("guess", %{"guess" => guess}, socket) do
+  #   {m,s} =
+  #   if guess == Integer.to_string(socket.assigns.target) do
+  #     {, socket.assigns.score + 1}
+  #   else
+  #     {"Your guess: #{guess}. Incorrect. Guess again. ", }
+  #   end
+  #   {:noreply,
+  #     assign(
+  #       socket,
+  #       message: m,
+  #       score: s)}
+  # end
+
+ end
