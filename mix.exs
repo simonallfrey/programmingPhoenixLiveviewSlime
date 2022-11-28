@@ -7,7 +7,8 @@ defmodule Pentoslime.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:gettext] ++ Mix.compilers(),
+      # compilers: [:gettext] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -33,6 +34,7 @@ defmodule Pentoslime.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       # {:phoenix_slime, "~> 0.13.1", git: "https://github.com/Raphexion/phoenix_slime.git"},
       {:phoenix_slime, "~> 0.13.0", git: "https://github.com/tensiondriven/phoenix_slime.git"},
       {:phoenix, "~> 1.6.15"},

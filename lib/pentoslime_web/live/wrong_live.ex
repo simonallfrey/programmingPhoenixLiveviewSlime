@@ -1,18 +1,33 @@
 defmodule PentoslimeWeb.WrongLive do
-  # use Phoenix.LiveView, layout: {PentoWeb.LayoutView, "live.html"}
+  # use Phoenix.LiveView, layout: {PentoslimeWeb.LayoutView, "live.html"}
   use PentoslimeWeb, :live_view
+  alias Pentoslime.Accounts
 
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, score: 0, message: "Hi! Make a guess:", target: :rand.uniform(10))}
+  def mount(_params, session, socket) do
+    user = Accounts.get_user_by_session_token(session["user_token"])
+    {
+     :ok,
+     assign(
+       socket,
+       score: 0,
+       message: "Hi! Make a guess:",
+       target: :rand.uniform(10),
+       session_id: session["live_socket_id"],
+       current_user: user,
+     )
+    }
   end
 
   def render(assigns) do
+    # https://github.com/slime-lang/slime
     ~H"""
     h1 Your score: #{@score}
     h2 #{@message}
     h2
      = for n <- 1..10 do
        a href="#" phx-click="guess" phx-value-guess="#{n}" phx-value-target="#{@target}" #{n}&nbsp
+    pre #{@current_user.email}
+        #{@session_id}
     """
     # a href="#" phx-click="guess" phx-value-guess={n} #{n}
   end
