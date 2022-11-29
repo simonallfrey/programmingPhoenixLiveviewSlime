@@ -214,4 +214,4 @@ defmodule Pento.Catalog do
 end
 ```
 
-If you don't like `with` you might try, https://hexdocs.pm/monad/Monad.html which is showcased at https://zohaib.me/monads-in-elixir-2 .
+If you don't like `with` you might try: https://hexdocs.pm/monad/Monad.html , which is showcased at https://zohaib.me/monads-in-elixir-2 .
