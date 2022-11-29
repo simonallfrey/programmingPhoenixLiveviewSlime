@@ -5,7 +5,7 @@ Example of using Slime (http://slime-lang.com/reference/) with Phoenix Liveview
 A more extensive reference (for slim, slime's ruby mother) https://rubydoc.info/gems/slim
 
 Uses the good work of Jonathan Yankovich (https://github.com/tensiondriven/phoenix_slime.git)
-Who added the heex support to slime for liveview.
+, who added the heex support to slime for liveview.
 
 Unfortunately the pull request seems to have stalled: https://github.com/slime-lang/slime/pull/168
 
