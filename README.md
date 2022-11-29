@@ -1,6 +1,14 @@
 # Pentoslime
 
-Example of using Slime (http://slime-lang.com/) with Phoenix Liveview
+Example of using Slime (http://slime-lang.com/reference/) with Phoenix Liveview
+
+A more extensive reference (for slim, slime's ruby mother) https://rubydoc.info/gems/slim
+
+Uses the good work of Jonathan Yankovich (https://github.com/tensiondriven/phoenix_slime.git)
+Who added the heex support to slime for liveview.
+
+Unfortunately the pull request seems to have stalled: https://github.com/slime-lang/slime/pull/168
+
 
 In mix.exs 
 
@@ -48,15 +56,14 @@ lib/pentoslime_web/live/wrong_live.ex
 + use PentoslimeWeb, :live_view
 ```
 
-Not sure if the following was necessary
-
 config/config.exs
 
 ``` elixir
 config :phoenix, :template_engines,
   slim: PhoenixSlime.Engine,
   slime: PhoenixSlime.Engine,
-  slimleex: PhoenixSlime.LiveViewEngine # If you want to use LiveView
+  #slimleex: PhoenixSlime.LiveViewEngine # If you want to use LiveView
+  sheex: PhoenixSlime.LiveViewHTMLEngine
 ```
 
 ## Generic instructions
