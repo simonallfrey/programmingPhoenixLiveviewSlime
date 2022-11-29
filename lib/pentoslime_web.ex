@@ -99,9 +99,9 @@ defmodule PentoslimeWeb do
       use Phoenix.HTML
 
       # Import LiveView and .heex helpers (live_render, live_patch, <.form>, etc)
-      import Phoenix.LiveView.Helpers
-      import PentoslimeWeb.LiveHelpers, except: [sigil_H: 2]
+      import Phoenix.LiveView.Helpers, except: [sigil_H: 2]
       import PhoenixSlime, only: [sigil_H: 2]
+      import PentoslimeWeb.LiveHelpers
 
 
       # Import basic rendering functionality (render, render_layout, etc)

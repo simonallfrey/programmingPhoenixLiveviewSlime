@@ -83,8 +83,16 @@ defmodule PentoslimeWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live "/guess", WrongLive
+
     live "/guess2", WrongLive2
     live "/demo", DemoLive
+
+    live "/products", ProductLive.Index, :index
+    live "/products/new", ProductLive.Index, :new
+    live "/products/:id/edit", ProductLive.Index, :edit
+    live "/products/:id", ProductLive.Show, :show
+    live "/products/:id/show/edit", ProductLive.Show, :edit
+
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
