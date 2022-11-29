@@ -1,4 +1,4 @@
-defmodule PentoslimeWeb.WrongLive do
+defmodule PentoslimeWeb.WrongLive2 do
   # use Phoenix.LiveView, layout: {PentoslimeWeb.LayoutView, "live.html"}
   use PentoslimeWeb, :live_view
   alias Pentoslime.Accounts
@@ -10,7 +10,8 @@ defmodule PentoslimeWeb.WrongLive do
      assign(
        socket,
        score: 0,
-       message: "Hi! Make a guess:",
+       wins: 0,
+       message: "Hi! VERSION2 Make a guess:",
        target: :rand.uniform(10),
        session_id: session["live_socket_id"],
        current_user: user
@@ -19,23 +20,28 @@ defmodule PentoslimeWeb.WrongLive do
   end
 
   def render(assigns) do
-    # https://github.com/slime-lang/slime
-    ~H"""
-    h1 Your score: #{@score}
-    h2 #{@message}
-    h2
-     = for n <- 1..10 do
-       a href="#" phx-click="guess" phx-value-guess="#{n}" phx-value-target="#{@target}" #{n}&nbsp
-    pre #{@current_user.email}
-        #{@session_id}
-    """
-    # a href="#" phx-click="guess" phx-value-guess={n} #{n}
+    Phoenix.View.render(PentoslimeWeb.DemoView, "demo.html", assigns)
   end
+
+  # def render(assigns) do
+  #   # https://github.com/slime-lang/slime
+  #   ~H"""
+  #   h1 Your score: #{@score}
+  #   h2 #{@message}
+  #   h2
+  #    = for n <- 1..10 do
+  #      a href="#" phx-click="guess" phx-value-guess="#{n}" phx-value-target="#{@target}" #{n}&nbsp
+  #   pre #{@current_user.email}
+  #       #{@session_id}
+  #   """
+  #   # a href="#" phx-click="guess" phx-value-guess={n} #{n}
+  # end
 
   def handle_event("guess", %{"guess" => guess, "target" => guess}, socket) do
     {:noreply, assign(socket,
       message: "Your guess: #{guess}. Correct. Guess again. ",
-      score: socket.assigns.score + 1)}
+      score: socket.assigns.score + 1,
+      wins: socket.assigns.wins + 1)}
   end
   def handle_event("guess", %{"guess" => guess}, socket) do
     {:noreply, assign(socket,
@@ -57,4 +63,4 @@ defmodule PentoslimeWeb.WrongLive do
   #       score: s)}
   # end
 
- end
+  end

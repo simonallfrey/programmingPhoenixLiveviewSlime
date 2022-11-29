@@ -36,8 +36,10 @@ defmodule Pentoslime.MixProject do
     [
       {:bcrypt_elixir, "~> 3.0"},
       # {:phoenix_slime, "~> 0.13.1", git: "https://github.com/Raphexion/phoenix_slime.git"},
-      {:phoenix_slime, "~> 0.13.0", git: "https://github.com/tensiondriven/phoenix_slime.git"},
-      {:phoenix, "~> 1.6.15"},
+      # {:phoenix_slime, "~> 0.13.0", git: "https://github.com/tensiondriven/phoenix_slime.git"},
+      {:phoenix_slime, github: "tensiondriven/phoenix_slime"},
+      # {:phoenix, "~> 1.6.15"},
+      {:phoenix, "~> 1.6.7"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},

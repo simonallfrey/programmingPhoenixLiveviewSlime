@@ -1,0 +1,78 @@
+h1 Log in
+
+:form let=f for=@conn action=Routes.user_session_path(@conn, :create) as=:user
+  = if @error_message do
+    .alert.alert-danger
+      p= @error_message
+
+  = label f, :email
+  = email_input f, :email, required: true
+
+  = label f, :password
+  = password_input f, :password, required: true
+
+  = label f, :remember_me, "Keep me logged in for 60 days"
+  = checkbox f, :remember_me
+
+  div
+    = submit "Log in"
+
+p
+  | This is a paragraph...
+   I want to continue it
+   anything indented will be in it
+   #{link "https://rubydoc.info/gems/slim", to: "https://rubydoc.info/gems/slim"}
+   #{2+2} should be 4
+
+p
+  | A link tag with no spacing
+  a href="https://rubydoc.info/gems/slim" https://rubydoc.info/gems/slim
+  | very tight...
+
+p
+  | A link tag with a leading space
+  a< href="https://rubydoc.info/gems/slim" https://rubydoc.info/gems/slim
+  | less tight...
+
+p
+  | A link tag with a trailing space
+  a> href="https://rubydoc.info/gems/slim" https://rubydoc.info/gems/slim
+  | also less tight...
+
+p
+  | A link tag with both leading and trailing space
+  a<> href="https://rubydoc.info/gems/slim" https://rubydoc.info/gems/slim
+  | just right...
+
+a href="https://rubydoc.info/gems/slim" https://rubydoc.info/gems/slim
+
+ul
+  li.first: a href="/guess" A link to "guess"/ Then some text
+  li: a href="/guess2" A link to "guess2"
+
+
+/ Getting whitespace correct.
+/ Use html nonbreaking space
+p
+  = link "Register", to: Routes.user_registration_path(@conn, :new)
+  | &nbsp|&nbsp
+  = link "Forgotten your password?", to: Routes.user_reset_password_path(@conn, :new)
+
+/ Use inline tags
+p #{link "Register", to: Routes.user_registration_path(@conn, :new)} |
+  #{link "Forgotten your password?", to: Routes.user_reset_password_path(@conn, :new)}
+
+/ Use an elixir charlist or string
+p
+  = link "Register", to: Routes.user_registration_path(@conn, :new)
+  = ' | '
+  = link "Forgotten your password?", to: Routes.user_reset_password_path(@conn, :new)
+
+/ Use => and/or =< to append or prepend a space
+p
+  => link "Register", to: Routes.user_registration_path(@conn, :new)
+  | |
+  =< link "Forgotten your password?", to: Routes.user_reset_password_path(@conn, :new)
+
+p= 1+1
+

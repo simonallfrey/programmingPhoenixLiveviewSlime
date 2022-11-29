@@ -1,0 +1,10 @@
+h1 Your score: #{@score}
+
+h2 #{@message}
+
+h2
+ = for n <- 1..10 do
+   a href="#" phx-click="guess" phx-value-guess="#{n}" phx-value-target="#{@target}" #{n}&nbsp
+
+pre #{@current_user.email}
+    #{@session_id}
