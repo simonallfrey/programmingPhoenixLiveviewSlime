@@ -1,5 +1,7 @@
 # Pentoslime
 
+Warning: untested with liveview > 17.5, pretty shure 18 breaks it.
+
 Example of using Slime (http://slime-lang.com/reference/) with Phoenix Liveview
 
 A more extensive reference (for slim, slime's ruby mother) https://rubydoc.info/gems/slim
