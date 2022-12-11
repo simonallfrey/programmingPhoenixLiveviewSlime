@@ -214,4 +214,340 @@ defmodule Pento.Catalog do
 end
 ```
 
-If you don't like `with` you might try: https://hexdocs.pm/monad/Monad.html , which is showcased at https://zohaib.me/monads-in-elixir-2 .
+If you don't like `with` you might try: https://hexdocs.pm/monad/Monad.html which is showcased at https://zohaib.me/monads-in-elixir-2 .
+
+## Give It a Try
+- Create another changeset in the Product schema that only changes the
+unit_price field and only allows for a price decrease from the current price.
+- Then, create a context function called markdown_product/2 that takes in an
+argument of the product and the amount by which the price should
+decrease. This function should use the new changeset you created to
+update the product with the newly decreased price.
+
+``` elixir
+@doc """
+Reduces the :unit_price of a product with an existing :unit_price
+
+Catch case product.unit_price=nil as cannot validate less_than: nil
+
+Error message doesn't clarify that it's the original :unit_price
+which can't be nil...
+
+#Ecto.Changeset<
+  action: nil,
+  changes: %{},
+  errors: [unit_price: {"can't be blank", [validation: :required]}],
+  data: #Pentoslime.Catalog.Product<>,
+  valid?: false
+>
+"""
+def reduce_unit_price(product, _attrs) when product.unit_price = nil do
+  product
+  |> cast(%{}, [])
+  |> validate_required([:unit_price])
+end
+def reduce_unit_price(%{unit_price: oldprice}=product,attrs)
+  product
+  |> cast(attrs, [:unit_price])
+  |> validate_number(:unit_price, less_than: oldprice)
+end
+
+@doc """
+Reduces the :unit_price of a product with an existing :unit_price
+
+Catch case product.unit_price=nil as cannot validate less_than: nil
+
+Error message specifies it's the original :unit_price which can't be nil.
+
+{:error, "require product.unit_price != nil"}
+
+(But it's not a changeset...)
+"""
+# also, pattern matching prefered to guards in simple cases
+# https://stackoverflow.com/questions/30589187/elixir-pattern-match-or-guard
+def reduce_unit_price_beta(%{unit_price: nil}=product,_attrs) do
+  {:error, "require product.unit_price != nil"}
+end
+def reduce_unit_price(%{unit_price: oldprice}=product,attrs)
+  product
+  |> cast(attrs, [:unit_price])
+  |> validate_number(:unit_price, less_than: oldprice)
+end
+```
+
+## Generators: Live Views and Templates
+- insert mode Ctrl-r % to insert the name of the current file.
+- markdown inline code is surrounded by backticks.
+- SPACE c d for wordnet dictionary.
+- SPACE u for universal prefix
+- SPACE p f find file in project 
+- SPACE u SPACE p f clear cache and find file in project
+- iex quit multiline input with Ctrl-g a (or c to continue)  
+  This uses erlang's "User switch command"
+
+
+
+Recall, the routes are defined as
+
+Here `live/4` is a macro, made available with
+
+`pentoslime/lib/pentoslime_web/router.ex`
+```elixir
+  use PentoslimeWeb, :router
+```
+This `use` injects the `PentoWeb.router/0` function into the current module.
+
+`pentoslime/lib/pentoslime_web.ex`
+```elixir
+defmodule PentoslimeWeb do
+...
+  def router do
+    quote do
+      use Phoenix.Router
+
+      import Plug.Conn
+      import Phoenix.Controller
+      import Phoenix.LiveView.Router
+    end
+  end
+...
+end
+```
+Finally it is the `import Phoenix.LiveView.Router` that provides the `live/4` macro.
+
+`pentoslime/lib/pentoslime_web/router.ex`
+``` elixir
+    live "/products", ProductLive.Index, :index
+    live "/products/new", ProductLive.Index, :new
+    live "/products/:id/edit", ProductLive.Index, :edit
+    live "/products/:id", ProductLive.Show, :show 
+    live "/products/:id/show/edit", ProductLive.Show, :edit
+```
+Ties urls to liveview modules e.g. ProductLive.Index, and a "live action" e.g. :new or :edit
+Actions let one liveview (module) manage multiple page states.
+
+The atoms in the name represent named parameters, which will be available in the module e.g. %{"id" => "333"}
+n.b. the map uses strings (binaries)
+
+The modules were created in e.g. ProductLive.Show
+
+`lib/pentoslime_web/live/product_live/show.ex`
+`lib/pentoslime_web/live/product_live/show.html.heex`
+
+3 workflows
+- 1st mount: set initial state, push stuff into the socket  .
+- 2nd handle_params: (if implemented)
+- 3rd render: render it, using the data in the socket's assigns to complete the @variables in the heex template
+
+If we get to the route via `live_patch`(client side) or `push_patch`(server side) only the second two workflows are triggered, we skip the mount.
+`push_redirect` (server side) _does_ call mount.
+  
+`pentoslime/lib/pentoslime_web/live/product_live/index.ex`
+```elixir
+  def mount(_params, _session, socket) do
+    # update socket's assigns with :products => [a list of all the products]
+    {:ok, assign(socket, :products, list_products())}
+  end
+```
+
+When filling out the template we can iterate over the list of products.
+
+`pentoslime/lib/pentoslime_web/live/product_live/index.html.heex`
+```heex
+...
+    <%= for product <- @products do %>
+...
+```
+
+The action is passed into the socket's assigns as `:live_action => :action`
+It is `handle_params` job to deal with it e.g. :
+
+
+`pentoslime/lib/pentoslime_web/live/product_live/index.ex`
+```elixir
+  def handle_params(params, _url, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+  defp apply_action(socket, :edit, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Edit Product")
+    |> assign(:product, Catalog.get_product!(id))
+  end
+```
+We can see what the template does with the new state:
+
+`pentoslime/lib/pentoslime_web/live/product_live/index.html.heex`
+```heex
+<%= if @live_action in [:new, :edit] do %>
+  <.modal return_to={Routes.product_index_path(@socket, :index)}>
+    <.live_component
+      module={PentoslimeWeb.ProductLive.FormComponent}
+      id={@product.id || :new}
+      title={@page_title}
+      action={@live_action}
+      product={@product}
+      return_to={Routes.product_index_path(@socket, :index)}
+    />
+  </.modal>
+<% end %>
+```
+It slaps a modal on top of our view with the editing functionality.
+
+https://hexdocs.pm/phoenix_live_view/Phoenix.LiveComponent.html
+
+live components are stateful, regular phoenix function components are stateless.
+A function component takes an assigns map and returns a rendered heex template.
+A live component has in id attribute and has event handlers.
+
+A live_component has its own lifecycle: 
+- when first created a live_component's `mount` is called
+- on state change live component's `update` is called then its `render`
+
+`use PentoslimeWeb :live_component` provides the default versions of these callbacks.
+default `mount` just passes the socket unchanged.
+
+Here form_components provides its own `update`
+Because an explicit `render/1` is not defined it uses `form_component.html.heex` in the same directory.
+We also have a couple of event handlers for "validate" and "save" events associsted with the form's
+`phx-change="validate"` and `phx-submit="save"`
+
+`pentoslime/lib/pentoslime_web/live/product_live/form_component.ex`
+```elixir
+  use PentoslimeWeb, :live_component
+
+  alias Pentoslime.Catalog
+
+  @impl true
+  def update(%{product: product} = assigns, socket) do
+    changeset = Catalog.change_product(product)
+
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(:changeset, changeset)}
+  end
+
+  @impl true
+  def handle_event("validate", %{"product" => product_params}, socket) do
+    changeset =
+      socket.assigns.product
+      |> Catalog.change_product(product_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :changeset, changeset)}
+  end
+
+  def handle_event("save", %{"product" => product_params}, socket) do
+    save_product(socket, socket.assigns.action, product_params)
+  end
+
+```
+
+`pentoslime/lib/pentoslime_web/live/product_live/form_component.html.heex`
+```heex
+...
+  <.form
+    let={f}
+    for={@changeset}
+    id="product-form"
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save">
+  ...
+  ...
+  </.form>
+...
+```
+
+The difference between those is mostly the amount of data sent over the wire:
+
+`link/2` and `redirect/2` do full page reloads
+
+`live_redirect/2` and `push_redirect/2` mounts a new LiveView while keeping the current layout
+
+`live_patch/2` and `push_patch/2` updates the current LiveView and sends only the minimal diff while also maintaining the scroll position
+
+An easy rule of thumb is to stick with `live_redirect/2` and `push_redirect/2` and use the patch helpers only in the cases where you want to minimize the amount of data sent when navigating within the same LiveView (for example, if you want to change the sorting of a table while also updating the URL).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Elixir quote and metaprogramming.
+https://elixir-lang.org/getting-started/meta/quote-and-unquote.html
+- Ctrl-x Ctrl-q toggle read only
+```elixir
+iex> quote do: sum(1,2,3)
+{:sum, [], [1, 2, 3]}
+iex> #The first element is the function name, the second is a keyword list containing metadata and the third is the arguments list.
+nil
+iex> quote do: 1+2
+{:+, [context: Elixir, imports: [{1, Kernel}, {2, Kernel}]], [1, 2]}
+iex> quote do: %{:a => 2}
+{:%{}, [], [a: 2]}
+iex> quote do: %{a: 2}
+{:%{}, [], [a: 2]}
+iex> quote do: x
+{:x, [], Elixir}
+iex> # so for a variable the last element is an atom.
+nil
+iex> # When quoting more complex expressions, we can see that the code is represented in such tuples, which are often nested inside each other in a structure resembling a tree. Many languages would call such representations an Abstract Syntax Tree (AST). Elixir calls them quoted expressions:
+nil
+iex> quote do: sum(1, 2+3, 4)
+{:sum, [], [1, {:+, [context: Elixir, imports: [{1, Kernel}, {2, Kernel}]], [2, 3]}, 4]}
+iex> Sometimes when working with quoted expressions, it may be useful to get the textual code representation back. This can be done with
+iex> Macro.to_string(quote do: sum(1, 2+3, 4))
+"sum(1, 2 + 3, 4)"
+iex> #Unquoting
+nil
+iex> # Quote is about retrieving the inner representation of some particular chunk of code. However, sometimes it may be necessary to inject some other particular chunk of code inside the representation we want to retrieve. 
+nil
+iex> number = 13
+13
+iex> Macro.to_string(quote do: 320 + number)
+"320 + number"
+iex> Macro.to_string(quote do: 320 + unquote(number))
+"320 + 13"
+iex> # so unquote inserts the value of the variable. 
+nil
+iex> # unquote must be used inside quote
+nil
+iex> # here's an example with a function name
+nil
+iex> fun = :hello
+:hello
+iex> Macro.to_string(quote do: unquote(fun)(:world)) 
+"hello(:world)"
+iex> # unquote won't work for a splice
+nil
+iex> l = [2,3,4]
+[2, 3, 4]
+iex> Macro.to_string(quote do: [1, unquote(l), 5])
+"[1, [2, 3, 4], 5]"
+iex> # but unquote_splicing will:
+nil
+iex> Macro.to_string(quote do: [1, unquote_splicing(l), 5])
+"[1, 2, 3, 4, 5]"
+```
+ 
+
+

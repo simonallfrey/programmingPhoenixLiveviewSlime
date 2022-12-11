@@ -56,6 +56,29 @@ defmodule Pentoslime.Catalog do
   end
 
   @doc """
+  Reduces the price of a product.
+
+  ## Examples
+
+      iex> markdown_product(product,markdown)
+      {:ok, %Product{}}
+
+      iex> markdown_product(product, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def markdown_product(%Product{unit_price: nil}, _) do
+    {:error, "require product.unit_price != nil"}
+  end
+  def markdown_product(%Product{unit_price: p} = product, markdown) do
+    attrs = %{unit_price: p-markdown}
+    product
+    |> Product.reduce_unit_price(attrs)
+    |> Repo.update()
+  end
+
+
+  @doc """
   Updates a product.
 
   ## Examples

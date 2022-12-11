@@ -6,7 +6,10 @@ defmodule PentoslimeWeb.ProductLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :products, list_products())}
+    {:ok,
+     socket
+     |> assign(:greeting, "This is pentoSLIME!")
+     |> assign(:products, list_products())}
   end
 
   @impl true

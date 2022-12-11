@@ -5,7 +5,8 @@ defmodule PentoslimeWeb.ProductLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok, socket
+     |> assign(:mount_time,currentTime())}
   end
 
   @impl true
@@ -18,4 +19,9 @@ defmodule PentoslimeWeb.ProductLive.Show do
 
   defp page_title(:show), do: "Show Product"
   defp page_title(:edit), do: "Edit Product"
+  defp currentTime() do
+    # import DateTime
+    # utc_now |> to_string
+    DateTime.utc_now |> DateTime.to_string
+  end
 end

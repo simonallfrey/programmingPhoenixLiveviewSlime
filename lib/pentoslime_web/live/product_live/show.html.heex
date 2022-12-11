@@ -1,3 +1,4 @@
+<h4>Last call to mount at: <%= @mount_time %></h4>
 <h1>Show Product</h1>
 
 <%= if @live_action in [:edit] do %>
@@ -38,4 +39,6 @@
 </ul>
 
 <span><%= live_patch "Edit", to: Routes.product_show_path(@socket, :edit, @product), class: "button" %></span> |
+<span><%= live_patch "Redisplay", to: Routes.product_show_path(@socket, :show, @product), class: "button" %></span> |
+<span><%= live_redirect "Reload", to: Routes.product_show_path(@socket, :show, @product), class: "button" %></span> |
 <span><%= live_redirect "Back", to: Routes.product_index_path(@socket, :index) %></span>
