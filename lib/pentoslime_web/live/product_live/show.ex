@@ -6,7 +6,8 @@ defmodule PentoslimeWeb.ProductLive.Show do
   @impl true
   def mount(_params, _session, socket) do
     {:ok, socket
-     |> assign(:mount_time,currentTime())}
+     |> assign(:mount_time,currentTime())
+    }
   end
 
   @impl true
@@ -14,7 +15,9 @@ defmodule PentoslimeWeb.ProductLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:product, Catalog.get_product!(id))}
+     |> assign(:product, Catalog.get_product!(id))
+     |> IO.inspect
+    }
   end
 
   defp page_title(:show), do: "Show Product"

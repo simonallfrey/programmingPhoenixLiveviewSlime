@@ -282,8 +282,14 @@ end
 - SPACE u for universal prefix
 - SPACE p f find file in project 
 - SPACE u SPACE p f clear cache and find file in project
-- iex quit multiline input with Ctrl-g a (or c to continue)  
-  This uses erlang's "User switch command"
+- iex interrupt multiline input with Ctrl-g i return c return (or c return to continue)  
+  This uses erlang's "User switch command" (don't press Ctrl-g twice or all is lost!)  
+  https://stackoverflow.com/questions/41866638/how-can-i-exit-a-multi-line-command-sequence-in-the-erlang-shell
+- IEx and IO.Inspect use #PID<...> #Fuction<...> #structname<...> sytax to represent language elements.
+- use xargs -I <placeholder> to pipe somewhere other than the end of the command  
+  e.g.  
+  `locate -i file_i_want_here.txt | head -1 | xargs -I {} cp {} file_here.txt`
+
 
 
 
