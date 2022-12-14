@@ -525,7 +525,7 @@ def changeset(model, param \\ :empty) do
 end
 ```
 
-n.b. `:name_your_constraint` doesn't need to be `:col1` or `:col2` its only function is to apper in the error message
+n.b. `:name_your_constraint` doesn't need to be `:col1` or `:col2` its only purpose is to apper in the error message
 when we are checking a unique index constraint using the name: option. e.g.
 
 ```elixir
