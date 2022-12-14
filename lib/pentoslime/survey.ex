@@ -9,6 +9,13 @@ defmodule Pentoslime.Survey do
   alias Pentoslime.Survey.Demographic
 
   @doc """
+  """
+  def get_demographic_by_user(user) do
+    Demographic.Query.for_user(user)
+    |> Repo.one
+  end
+
+  @doc """
   Returns the list of demographics.
 
   ## Examples

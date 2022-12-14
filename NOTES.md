@@ -289,6 +289,7 @@ end
 - use xargs -I <placeholder> to pipe somewhere other than the end of the command  
   e.g.  
   `locate -i file_i_want_here.txt | head -1 | xargs -I {} cp {} file_here.txt`
+- https://stackoverflow.com/questions/22817120/how-can-i-save-evil-mode-vim-style-macros-to-my-init-el
 
 
 
@@ -617,4 +618,106 @@ iex> Survey.update_rating(r,%{rating_attrs| stars: 4})
 
 ```
 
+## Associations and Preloading queries
+See p49 "Adding Associations to Schemas" of the Programming Ecto book.
+
+At the database level, we connect two tables with a foreign key: e.g. artist_id column in
+albums refers to the primary key of the artists table. In Ecto, we use associations
+to model these relationships. Associations help reflect the connections between
+database tables in our Elixir code.
+
+`has_many` is and example of an association.
+```elixir
+defmodule MusicDB.Album do
+  use Ecto.Schema
+  schema "albums" do
+    field :title, :string
+    field :release_date, :date
+    has_many :tracks, MusicDB.Track
+  end
+end
+```
+This call states that our %Album{} schema will have a field called tracks, which
+will consist of zero or more instances of the %Track{} struct. In this association,
+the %Album{} record is called the parent record and the %Track{} records are
+the child records.
+For this to work, Ecto will be looking for a column named `album_id` in the tracks
+table to connect the tracks to the albums. We built these tables following
+Ecto’s conventions, but if you’re working with a legacy database that uses a
+different naming scheme, you can still make the association work by specifying
+the foreign key explicitly.
+For example, if the tracks table used `album_number` rather than `album_id` for the
+foreign key, we could create the association like this:
+
+`has_many :tracks, MusicDB.Track, foreign_key: :album_number`
+
+See p55 "Working with associations in queries" of the Programming Ecto book.
+
+Ecto does not lazy load associated records (avoids us getting bitten by the N+1 Query problem)
+we have to ask for them to be preloaded:
+
+
+```elixir
+iex> r = Ecto.Query.from(Pentoslime.Catalog.Product,limit: 1)|>Pentoslime.Repo.one
+%Pentoslime.Catalog.Product{
+  __meta__: #Ecto.Schema.Metadata<:loaded, "products">,
+  id: 10,
+  description: "Bat the ball back and forth. Don't miss!",
+  name: "Table Tennis",
+  sku: 15222324,
+  unit_price: 12.0,
+  image_upload: nil,
+  inserted_at: ~N[2022-11-30 19:53:43],
+  updated_at: ~N[2022-11-30 19:53:43],
+  ratings: #Ecto.Association.NotLoaded<association :ratings is not loaded>
+}
+iex> r.ratings                                                                    
+#Ecto.Association.NotLoaded<association :ratings is not loaded>
+iex> r = Ecto.Query.from(Pentoslime.Catalog.Product,limit: 1, preload: :ratings)|>Pentoslime.Repo.one
+[debug] QUERY OK source="products" db=0.4ms idle=1605.3ms
+SELECT p0."id", p0."description", p0."name", p0."sku", p0."unit_price", p0."image_upload", p0."inserted_at", p0."updated_at" FROM "products" AS p0 LIMIT 1 []
+↳ anonymous fn/4 in :elixir.eval_external_handler/1, at: src/elixir.erl:298
+[debug] QUERY OK source="ratings" db=0.3ms queue=0.4ms idle=1608.0ms
+SELECT r0."id", r0."stars", r0."user_id", r0."product_id", r0."inserted_at", r0."updated_at", r0."product_id" FROM "ratings" AS r0 WHERE (r0."product_id" = $1) ORDER BY r0."product_id" [10]
+↳ anonymous fn/4 in :elixir.eval_external_handler/1, at: src/elixir.erl:298
+%Pentoslime.Catalog.Product{
+  __meta__: #Ecto.Schema.Metadata<:loaded, "products">,
+  id: 10,
+  description: "Bat the ball back and forth. Don't miss!",
+  name: "Table Tennis",
+  sku: 15222324,
+  unit_price: 12.0,
+  image_upload: nil,
+  inserted_at: ~N[2022-11-30 19:53:43],
+  updated_at: ~N[2022-11-30 19:53:43],
+  ratings: [
+    %Pentoslime.Survey.Rating{
+      __meta__: #Ecto.Schema.Metadata<:loaded, "ratings">,
+      id: 6,
+      stars: 4,
+      user_id: 4,
+      user: #Ecto.Association.NotLoaded<association :user is not loaded>,
+      product_id: 10,
+      product: #Ecto.Association.NotLoaded<association :product is not loaded>,
+      inserted_at: ~N[2022-12-14 16:03:20],
+      updated_at: ~N[2022-12-14 16:05:34]
+    }
+  ]
+}
+iex> r.ratings                                                                                       
+[
+  %Pentoslime.Survey.Rating{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "ratings">,
+    id: 6,
+    stars: 4,
+    user_id: 4,
+    user: #Ecto.Association.NotLoaded<association :user is not loaded>,
+    product_id: 10,
+    product: #Ecto.Association.NotLoaded<association :product is not loaded>,
+    inserted_at: ~N[2022-12-14 16:03:20],
+    updated_at: ~N[2022-12-14 16:05:34]
+  }
+]
+iex> 
+```
 
