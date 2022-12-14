@@ -525,4 +525,96 @@ def changeset(model, param \\ :empty) do
 end
 ```
 
-n.b. `:name_your_constraint` doesn't need to be `:col1` or `:col2` but will appear in the error message.
+n.b. `:name_your_constraint` doesn't need to be `:col1` or `:col2` its only function is to apper in the error message
+when we are checking a unique index constraint using the name: option. e.g.
+
+```elixir
+# lib/pentoslime/survey/rating.ex
+#   |> unique_constraint(:user_can_only_give_one_rating_per_product, name: :index_ratings_on_user_product)
+
+pentoslime$ iex -S mix
+iex> alias Pentoslime.Accounts
+iex> user_attrs = %{email: "s2@j.a", password: "letmeinletmein"}
+iex> {:ok, user} = Accounts.register_user(user_attrs)           
+{:ok,
+ #Pentoslime.Accounts.User<
+   __meta__: #Ecto.Schema.Metadata<:loaded, "users">,
+   id: 4,
+   email: "s2@j.a",
+   confirmed_at: nil,
+   inserted_at: ~N[2022-12-14 14:35:35],
+   updated_at: ~N[2022-12-14 14:35:35],
+   ...
+ >}
+iex> alias Pentoslime.Survey
+iex> demo_attrs=%{user_id: user.id, gender: "male", year_of_birth: 1973}
+iex> Survey.create_demographic(demo_attrs)
+{:ok,
+ %Pentoslime.Survey.Demographic{
+   __meta__: #Ecto.Schema.Metadata<:loaded, "demographics">,
+   id: 1,
+   gender: "male",
+   year_of_birth: 1973,
+   user_id: 4,
+   user: #Ecto.Association.NotLoaded<association :user is not loaded>,
+   inserted_at: ~N[2022-12-14 14:58:19],
+   updated_at: ~N[2022-12-14 14:58:19]
+ }}
+iex> alias Pentoslime.Catalog
+iex> Catalog.list_products |> Enum.map(fn x -> x.id end)
+'\n\f\r\b\t\v'
+iex> Catalog.list_products |> Enum.map(fn x -> x.id end) |> List.to_tuple
+{10, 12, 13, 8, 9, 11}
+iex> rating_attrs = %{user_id: user.id, product_id: 10, stars: 5}          
+%{product_id: 10, stars: 5, user_id: 4}
+iex> Survey.create_rating(rating_attrs)                                    
+{:ok,
+ %Pentoslime.Survey.Rating{
+   __meta__: #Ecto.Schema.Metadata<:loaded, "ratings">,
+   id: 6,
+   stars: 5,
+   user_id: 4,
+   user: #Ecto.Association.NotLoaded<association :user is not loaded>,
+   product_id: 10,
+   product: #Ecto.Association.NotLoaded<association :product is not loaded>,
+   inserted_at: ~N[2022-12-14 16:03:20],
+   updated_at: ~N[2022-12-14 16:03:20]
+ }}
+iex> Survey.create_rating(rating_attrs)
+{:error,
+ #Ecto.Changeset<
+   action: :insert,
+   changes: %{product_id: 10, stars: 5, user_id: 4},
+   errors: [user_can_only_give_one_rating_per_product: {"has already been taken", [constraint: :unique, constraint_name: "index_ratings_on_user_product"]}],
+   data: #Pentoslime.Survey.Rating<>,
+   valid?: false
+ >}
+iex> r = Survey.get_rating!(6)
+%Pentoslime.Survey.Rating{
+  __meta__: #Ecto.Schema.Metadata<:loaded, "ratings">,
+  id: 6,
+  stars: 5,
+  user_id: 4,
+  user: #Ecto.Association.NotLoaded<association :user is not loaded>,
+  product_id: 10,
+  product: #Ecto.Association.NotLoaded<association :product is not loaded>,
+  inserted_at: ~N[2022-12-14 16:03:20],
+  updated_at: ~N[2022-12-14 16:03:20]
+}
+iex> Survey.update_rating(r,%{rating_attrs| stars: 4})
+{:ok,
+ %Pentoslime.Survey.Rating{
+   __meta__: #Ecto.Schema.Metadata<:loaded, "ratings">,
+   id: 6,
+   stars: 4,
+   user_id: 4,
+   user: #Ecto.Association.NotLoaded<association :user is not loaded>,
+   product_id: 10,
+   product: #Ecto.Association.NotLoaded<association :product is not loaded>,
+   inserted_at: ~N[2022-12-14 16:03:20],
+   updated_at: ~N[2022-12-14 16:05:34]
+ }}
+
+```
+
+
