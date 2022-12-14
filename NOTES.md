@@ -475,85 +475,54 @@ The difference between those is mostly the amount of data sent over the wire:
 
 An easy rule of thumb is to stick with `live_redirect/2` and `push_redirect/2` and use the patch helpers only in the cases where you want to minimize the amount of data sent when navigating within the same LiveView (for example, if you want to change the sorting of a table while also updating the URL).
 
+# Chapter 6 Function Components
+
+About database indicies:
+https://stackoverflow.com/questions/1108/how-does-database-indexing-work
 
 
+`unique_constraint(changeset, field_or_fields, opts \\ [])`
 
+`@spec unique_constraint(t(), atom() | [atom(), ...], Keyword.t()) :: t()`
 
+Checks for a unique constraint in the given field or list of fields.
 
+The unique constraint works by relying on the database to check if the unique constraint has been violated or not and, if so, Ecto converts it into a changeset error.
 
+In order to use the uniqueness constraint, the first step is to define the unique index in a migration:
 
+`create unique_index(:users, [:email])`
 
+Now that a constraint exists, when modifying users, we could annotate the changeset with a unique constraint so Ecto knows how to convert it into an error message:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Elixir quote and metaprogramming.
-https://elixir-lang.org/getting-started/meta/quote-and-unquote.html
-- Ctrl-x Ctrl-q toggle read only
 ```elixir
-iex> quote do: sum(1,2,3)
-{:sum, [], [1, 2, 3]}
-iex> #The first element is the function name, the second is a keyword list containing metadata and the third is the arguments list.
-nil
-iex> quote do: 1+2
-{:+, [context: Elixir, imports: [{1, Kernel}, {2, Kernel}]], [1, 2]}
-iex> quote do: %{:a => 2}
-{:%{}, [], [a: 2]}
-iex> quote do: %{a: 2}
-{:%{}, [], [a: 2]}
-iex> quote do: x
-{:x, [], Elixir}
-iex> # so for a variable the last element is an atom.
-nil
-iex> # When quoting more complex expressions, we can see that the code is represented in such tuples, which are often nested inside each other in a structure resembling a tree. Many languages would call such representations an Abstract Syntax Tree (AST). Elixir calls them quoted expressions:
-nil
-iex> quote do: sum(1, 2+3, 4)
-{:sum, [], [1, {:+, [context: Elixir, imports: [{1, Kernel}, {2, Kernel}]], [2, 3]}, 4]}
-iex> Sometimes when working with quoted expressions, it may be useful to get the textual code representation back. This can be done with
-iex> Macro.to_string(quote do: sum(1, 2+3, 4))
-"sum(1, 2 + 3, 4)"
-iex> #Unquoting
-nil
-iex> # Quote is about retrieving the inner representation of some particular chunk of code. However, sometimes it may be necessary to inject some other particular chunk of code inside the representation we want to retrieve. 
-nil
-iex> number = 13
-13
-iex> Macro.to_string(quote do: 320 + number)
-"320 + number"
-iex> Macro.to_string(quote do: 320 + unquote(number))
-"320 + 13"
-iex> # so unquote inserts the value of the variable. 
-nil
-iex> # unquote must be used inside quote
-nil
-iex> # here's an example with a function name
-nil
-iex> fun = :hello
-:hello
-iex> Macro.to_string(quote do: unquote(fun)(:world)) 
-"hello(:world)"
-iex> # unquote won't work for a splice
-nil
-iex> l = [2,3,4]
-[2, 3, 4]
-iex> Macro.to_string(quote do: [1, unquote(l), 5])
-"[1, [2, 3, 4], 5]"
-iex> # but unquote_splicing will:
-nil
-iex> Macro.to_string(quote do: [1, unquote_splicing(l), 5])
-"[1, 2, 3, 4, 5]"
+cast(user, params, [:email])
+|> unique_constraint(:email)
 ```
- 
+Now, when invoking `Ecto.Repo.insert/2` or `Ecto.Repo.update/2,` if the email already exists, the underlying operation will fail but Ecto will convert the database exception into a changeset error and return an {:error, changeset} tuple. Note that the error will occur only after hitting the database, so it will not be visible until all other validations pass. If the constraint fails inside a transaction, the transaction will be marked as aborted.
 
 
+And uniqueness on column pairs:
+https://stackoverflow.com/questions/36418223/creating-a-unique-constraint-on-two-columns-together-in-ecto
+
+Using only create unique_index on your model will ultimately throw an exception instead of giving you an error.
+
+To get an error add a constraint on your changeset but as a parameter you can give the index name created by unique_index.
+
+So in your migration file :
+
+```elixir
+create unique_index(:your_table, [:col1, :col2], name: :your_index_name)
+```
+
+Then in your changeset :
+
+```elixir
+def changeset(model, param \\ :empty) do
+  model
+  |> cast(params, @required_fields, @optional_fields)
+  |> unique_constraint(:name_your_constraint, name: :your_index_name)
+end
+```
+
+n.b. `:name_your_constraint` doesn't need to be `:col1` or `:col2` but will appear in the error message.

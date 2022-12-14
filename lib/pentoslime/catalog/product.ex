@@ -2,14 +2,16 @@ defmodule Pentoslime.Catalog.Product do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Pentoslime.Survey.Rating
+
   schema "products" do
     field :description, :string
     field :name, :string
     field :sku, :integer
     field :unit_price, :float
     field :image_upload, :string
-
     timestamps()
+    has_many :ratings, Rating
   end
 
   @doc false
