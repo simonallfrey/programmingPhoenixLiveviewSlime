@@ -674,12 +674,6 @@ iex> r = Ecto.Query.from(Pentoslime.Catalog.Product,limit: 1)|>Pentoslime.Repo.o
 iex> r.ratings                                                                    
 #Ecto.Association.NotLoaded<association :ratings is not loaded>
 iex> r = Ecto.Query.from(Pentoslime.Catalog.Product,limit: 1, preload: :ratings)|>Pentoslime.Repo.one
-[debug] QUERY OK source="products" db=0.4ms idle=1605.3ms
-SELECT p0."id", p0."description", p0."name", p0."sku", p0."unit_price", p0."image_upload", p0."inserted_at", p0."updated_at" FROM "products" AS p0 LIMIT 1 []
-↳ anonymous fn/4 in :elixir.eval_external_handler/1, at: src/elixir.erl:298
-[debug] QUERY OK source="ratings" db=0.3ms queue=0.4ms idle=1608.0ms
-SELECT r0."id", r0."stars", r0."user_id", r0."product_id", r0."inserted_at", r0."updated_at", r0."product_id" FROM "ratings" AS r0 WHERE (r0."product_id" = $1) ORDER BY r0."product_id" [10]
-↳ anonymous fn/4 in :elixir.eval_external_handler/1, at: src/elixir.erl:298
 %Pentoslime.Catalog.Product{
   __meta__: #Ecto.Schema.Metadata<:loaded, "products">,
   id: 10,
@@ -721,3 +715,65 @@ iex> r.ratings
 iex> 
 ```
 
+To get all users: `Pentoslime.Repo.all(Accounts.User)`
+
+Ecto queries use macros which need us to use the pin operator '^' on expressions which need evaluating.
+
+e.g.
+```elixir
+  defp for_user(query, user) do
+    query
+    |> where([r], r.user_id == ^user.id)
+  end
+```
+```elixir
+ex> alias Pentoslime.Survey
+iex> alias Pentoslime.Accounts
+iex> alias Pentoslime.Catalog
+iex> user = Accounts.get_user!(3)
+iex> Survey.create_rating(%{user_id: user.id, product_id: 8, stars: 2})
+iex> Catalog.list_products_with_user_rating(user)
+[
+  %Pentoslime.Catalog.Product{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "products">,
+    id: 10,
+    description: "Bat the ball back and forth. Don't miss!",
+    name: "Table Tennis",
+    sku: 15222324,
+    unit_price: 12.0,
+    image_upload: nil,
+    inserted_at: ~N[2022-11-30 19:53:43],
+    updated_at: ~N[2022-11-30 19:53:43],
+    ratings: []
+  },
+  ...
+  ...
+  %Pentoslime.Catalog.Product{
+    __meta__: #Ecto.Schema.Metadata<:loaded, "products">,
+    id: 8,
+    description: "The classic strategy game",
+    name: "Chess",
+    sku: 14324,
+    unit_price: 10.0,
+    image_upload: nil,
+    inserted_at: ~N[2022-11-30 19:53:43],
+    updated_at: ~N[2022-12-13 17:10:51],
+    ratings: [
+      %Pentoslime.Survey.Rating{
+        __meta__: #Ecto.Schema.Metadata<:loaded, "ratings">,
+        id: 9,
+        stars: 2,
+        user_id: 3,
+        user: #Ecto.Association.NotLoaded<association :user is not loaded>,
+        product_id: 8,
+        product: #Ecto.Association.NotLoaded<association :product is not loaded>,
+        inserted_at: ~N[2022-12-14 23:39:50],
+        updated_at: ~N[2022-12-14 23:39:50]
+      }
+    ]
+  },
+  ...
+  ...
+]
+iex> 
+```

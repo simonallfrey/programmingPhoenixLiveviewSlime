@@ -8,6 +8,11 @@ defmodule Pentoslime.Catalog do
 
   alias Pentoslime.Catalog.Product
 
+  def list_products_with_user_rating(user) do
+    Product.Query.with_user_ratings(user)
+    |> Repo.all()
+  end
+
   @doc """
   Returns the list of products.
 
