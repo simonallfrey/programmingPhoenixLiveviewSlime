@@ -13,7 +13,7 @@ defmodule Pentoslime.Catalog.Product.Query do
   def preload_user_ratings(query, user) do
     ratings_query = Rating.Query.preload_user(user)
     # preload using a 'table' containing only the ratings
-    # given by specified user (not all ratings)
+    # given by specified user (not the whole ratings table)
     query
     |> preload(ratings: ^ratings_query)
   end

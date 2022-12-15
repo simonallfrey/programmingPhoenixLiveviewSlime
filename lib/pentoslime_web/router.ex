@@ -82,30 +82,32 @@ defmodule PentoslimeWeb.Router do
   scope "/", PentoslimeWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live "/guess", WrongLive
+    live_session :default, on_mount: PentoslimeWeb.UserAuthLive do
+      live "/guess", WrongLive
 
-    live "/guess2", WrongLive2
-    live "/promo", PromoLive
-    live "/demo", DemoLive
+      live "/guess2", WrongLive2
+      live "/promo", PromoLive
+      live "/demo", DemoLive
 
-    # https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.Router.html#live/4
-    # n.b. when an action is given a route helper named after the LiveView is also generated
-    # Routes.product_index_path(@socket, :index)
-    # will point to this route:
-    live "/products", ProductLive.Index, :index
-    live "/products/new", ProductLive.Index, :new
-    live "/products/:id/edit", ProductLive.Index, :edit
-    # Routes.product_show_path(@socket, :show)
-    # will point to this route:
-    live "/products/:id", ProductLive.Show, :show
-    live "/products/:id/show/edit", ProductLive.Show, :edit
+      # https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.Router.html#live/4
+      # n.b. when an action is given a route helper named after the LiveView is also generated
+      # Routes.product_index_path(@socket, :index)
+      # will point to this route:
+      live "/products", ProductLive.Index, :index
+      live "/products/new", ProductLive.Index, :new
+      live "/products/:id/edit", ProductLive.Index, :edit
+      # Routes.product_show_path(@socket, :show)
+      # will point to this route:
+      live "/products/:id", ProductLive.Show, :show
+      live "/products/:id/show/edit", ProductLive.Show, :edit
 
-    live "/questions", QuestionLive.Index, :index
-    live "/questions/new", QuestionLive.Index, :new
-    live "/questions/:id/edit", QuestionLive.Index, :edit
+      live "/questions", QuestionLive.Index, :index
+      live "/questions/new", QuestionLive.Index, :new
+      live "/questions/:id/edit", QuestionLive.Index, :edit
 
-    live "/questions/:id", QuestionLive.Show, :show
-    live "/questions/:id/show/edit", QuestionLive.Show, :edit
+      live "/questions/:id", QuestionLive.Show, :show
+      live "/questions/:id/show/edit", QuestionLive.Show, :edit
+    end
 
 
     get "/users/settings", UserSettingsController, :edit

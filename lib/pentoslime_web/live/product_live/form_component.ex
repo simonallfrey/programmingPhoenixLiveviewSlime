@@ -43,7 +43,7 @@ defmodule PentoslimeWeb.ProductLive.FormComponent do
           entry,
           &upload_static_file(&1, socket)
         )
-      dbg(path)
+      # dbg(path)
       {:noreply,
        socket
        |> put_flash(:info, "file #{entry.client_name} uploaded")
