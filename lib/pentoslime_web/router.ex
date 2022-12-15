@@ -89,6 +89,7 @@ defmodule PentoslimeWeb.Router do
       live "/guess2", WrongLive2
       live "/promo", PromoLive
       live "/demo", DemoLive
+      live "/survey", SurveyLive, :index
 
       # https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.Router.html#live/4
       # n.b.
