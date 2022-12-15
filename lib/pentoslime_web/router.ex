@@ -82,15 +82,22 @@ defmodule PentoslimeWeb.Router do
   scope "/", PentoslimeWeb do
     pipe_through [:browser, :require_authenticated_user]
 
+    # share layout and authentication logic with live_session
     live_session :default, on_mount: PentoslimeWeb.UserAuthLive do
-      live "/guess", WrongLive
 
+      live "/guess", WrongLive
       live "/guess2", WrongLive2
       live "/promo", PromoLive
       live "/demo", DemoLive
 
       # https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.Router.html#live/4
-      # n.b. when an action is given a route helper named after the LiveView is also generated
+      # n.b.
+      # when the live macro is given an action (e.g. :index)
+      # a route helper is generated (named after the LiveView)
+      # XXXXLive.YYYY would generate the helper xxx_yyyy_path
+      # e.g.
+      # PentoslimeWeb.Router.product_index_path(@socket, :index)
+      # or if PentoslimeWeb.Router is aliased to Routes
       # Routes.product_index_path(@socket, :index)
       # will point to this route:
       live "/products", ProductLive.Index, :index
