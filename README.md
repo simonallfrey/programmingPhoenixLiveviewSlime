@@ -70,7 +70,7 @@ config :phoenix, :template_engines,
   sheex: PhoenixSlime.LiveViewHTMLEngine
 ```
 
-## Install Docker
+## Install docker
 
 ``` sh
 sudo apt-get update
@@ -91,8 +91,68 @@ docker inspect host
 # Maybe need docker-compose later for orchestration with postgres in a container 
 sudo apt install docker-compose
 ```
+### Docker hygiene
+https://projectatomic.io/blog/2015/07/what-are-docker-none-none-images/
 
-## Deployment, Releases and Docker.
+There are good `<none>:<none>` images and there are bad ones.
+The good ones are lower layers of a named image. These are only shown
+with `docker images -a`.
+Any `<nome>:<none>` images shown without the `-a` flag are build artifacts
+which need to be removed.
+
+``` sh
+$ sudo docker images
+REPOSITORY          TAG       IMAGE ID       CREATED         SIZE
+pentoslime-docker   latest    f4772d31d503   6 hours ago     126MB
+<none>              <none>    1afaa1194230   26 hours ago    126MB
+<none>              <none>    6771fb4e6dd1   26 hours ago    1.06GB
+<none>              <none>    101c26de854d   26 hours ago    1.06GB
+<none>              <none>    425cdc6f490e   26 hours ago    503MB
+<none>              <none>    2de8a7c5314e   28 hours ago    198MB
+<none>              <none>    3b8586009321   28 hours ago    198MB
+elixir              latest    718df5f2725f   9 days ago      1.47GB
+postgres            9.6       027ccf656dc1   10 months ago   200MB
+# we can clean up with:
+$ sudo docker rmi $(sudo docker images -f "dangling=true" -q)
+# or maybe be more insistent if claims usage by non existent container.
+$ sudo docker rmi -f $(sudo docker images -f "dangling=true" -q)
+$ sudo docker images
+REPOSITORY          TAG       IMAGE ID       CREATED         SIZE
+pentoslime-docker   latest    f4772d31d503   6 hours ago     126MB
+elixir              latest    718df5f2725f   9 days ago      1.47GB
+postgres            9.6       027ccf656dc1   10 months ago   200MB
+#much better
+$ sudo docker system df
+Images          3         3         1.791GB   0B (0%)
+Containers      39        0         326.1MB   326.1MB (100%)
+Local Volumes   0         0         0B        0B
+Build Cache     0         0         0B        0B
+$ sudo du -sh /var/lib/docker
+3.8G	/var/lib/docker
+```
+### Docker resourse usage
+https://phoenixnap.com/kb/docker-memory-and-cpu-limit
+  
+### Setup postgres and ufw for docker
+`docker inspect bridge` show us that the docker network is `172.17.0.0/16` 
+
+To get postgresql to accept connections from this network we need to edit `/etc/postgresql/15/main/pg_hba.conf`. It's protected so needs to be opened as root. Open in emacs with `/sudo::/etc/postgresql/15/main/pg_hba.conf`
+(you'll be prompted for a password on typing the second colon). Add the last line here.
+``` sh
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            scram-sha-256
+host    all             all             172.17.0.0/16           trust
+```
+We'll also need to add an exception in the firewall, then restart postgres
+``` sh
+sudo ufw allow in from 172.17.0.0/16
+sudo service postgresql restart
+```
+
+
+
+
+## Deployment, Releases and docker.
 https://hexdocs.pm/phoenix/deployment.html
 https://hexdocs.pm/phoenix/releases.html
 
