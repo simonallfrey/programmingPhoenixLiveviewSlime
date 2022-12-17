@@ -132,6 +132,8 @@ $ sudo du -sh /var/lib/docker
 ```
 ### Docker resourse usage
 https://phoenixnap.com/kb/docker-memory-and-cpu-limit
+If you don’t limit Docker’s memory and CPU usage, Docker can use all the systems resources.
+
   
 ### Setup postgres and ufw for docker
 `docker inspect bridge` show us that the docker network is `172.17.0.0/16` 
@@ -149,6 +151,24 @@ sudo ufw allow in from 172.17.0.0/16
 sudo service postgresql restart
 ```
 
+If you are not sure which port postgres is running on (not 5432?) then
+
+``` sh
+psql -U postgres <<EOF
+SELECT * FROM pg_settings WHERE name='port'
+EOF
+
+Password for user postgres: 
+
+ name | setting | unit |                       category                       |                short_desc                | extra_desc |  context   | vartype |       source       | min_val | max_val | enumvals | boot_val | reset_val |               sourcefile                | sourceline | pending_restart 
+------+---------+------+------------------------------------------------------+------------------------------------------+------------+------------+---------+--------------------+---------+---------+----------+----------+-----------+-----------------------------------------+------------+-----------------
+ port | 5432    |      | Connections and Authentication / Connection Settings | Sets the TCP port the server listens on. |            | postmaster | integer | configuration file | 1       | 65535   |          | 5432     | 5432      | /etc/postgresql/15/main/postgresql.conf |         64 | f
+(1 row)
+```
+credit https://stackoverflow.com/questions/5598517/find-the-host-name-and-port-using-psql-commands
+
+This guy has some other ideas I should follow up on
+https://gist.github.com/zentetsukenz/43a428aff16738177d8a244582b306c3
 
 
 
