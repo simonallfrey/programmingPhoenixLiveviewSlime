@@ -115,7 +115,13 @@ defmodule PentoslimeWeb.ProductLive.FormComponent do
     "File exceeds max size"
   end
 
-  def product_params(socket, params) do
-    Map.put(params, "image_upload", socket.assigns.image_upload)
+  def product_params(%{assigns: %{image_upload: path}}=_socket, params) do
+    # if we have an :image_upload in socket copy it to params
+    # Map.put(params, "image_upload", socket.assigns.image_upload)
+    Map.put(params, "image_upload", path)
+  end
+  def product_params(_socket, params) do
+    # no image_upload in socket
+    params
   end
 end

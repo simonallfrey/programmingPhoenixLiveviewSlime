@@ -226,6 +226,91 @@ from scratch. This is why I had to fork tensiondriven/phoenix_slime and in mix.e
 +     {:phoenix_slime, github: "simonallfrey/phoenix_slime"},
 ```
 
+### Dockerising postgres
+First let's dump our existing database:
+
+``` sh
+cd postgres-docker
+PGPASSWORD=postgres pg_dumpall -U postgres > dumpfile.sql
+```
+ref https://www.postgresql.org/docs/current/backup-dump.html
+
+The docker image will create the postgres role itself so edit the dumpfile.sql
+to edit out its CREATE and ALTER
+
+``` sql
+-- CREATE ROLE postgres;
+-- ALTER ROLE postgres WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'SCRAM-SHA-256$4096:WbdsAfQobonG6heAUlU41Q==$Gcb//fdNcULyYBVro8LNOvJwfvfi+lOiLm8eoKxDibk=:JZ7xeJdIUhF2V9mvI7Lt+qbcE1LvRHDhrd2wckPq1B8=';
+```
+Now edit 
+`postgres-docker/Dockerfile`
+``` dockerfile
+FROM postgres
+ENV POSTGRES_PASSWORD postgres
+COPY dumpfile.sql /docker-entrypoint-initdb.d/
+```
+The postgres docker image will initialize using sql files it finds in `/docker-entrypoint-initdb.d/`
+ref https://hub.docker.com/_/postgres
+
+Now build and run
+
+``` sh
+sudo docker build -t postgres-pentoslime .
+sudo docker run -d --name postgres-pentoslime-container -p 6543:5432 postgres-pentoslime
+```
+
+The container's port 5432 (on which postgres is listening) is exposed on localhost port 6543.
+
+
+``` sh
+#connect with psq run on host.
+PGPASSWORD=postgres psql -h localhost -p 6543 -U postgres
+
+#connect with psq run in container.
+sudo docker exec -ti postgres-pentoslime-container psql -U postgres
+
+#open bash shell in container
+sudo docker exec -ti postgres-pentoslime-container bash
+```
+
+We can now run our phoenix app connected to the postgres in docker.
+``` sh
+sudo docker run --network="host" -e SECRET_KEY_BASE=6DR+3g8zNX2xNgW/8Wr/aSaekvBY3L7miXdN7ueFmOokqUYTKnTB5F+defE+ZcCN -e DATABASE_URL=ecto://postgres:postgres@127.0.0.1:6543/pentoslime_dev pentoslime-docker2
+```
+
+If we need to remove the container (but not the image)
+
+``` sh
+sudo docker rm postgres-pentoslime-container
+```
+
+Should probably use either docker stack or docker-compose and a docker-compose.yml
+file to put the postgres and phoenix apps together and deal with networking directly.
+(certainly for a cloud deployment.)
+
+n.b. there are still some problems with the phoenix app not being able to find paths for product image files. I think this is because the directories were not created.
+
+there are problems with cross site request forgery (csrf) protection for the prod build.
+
+``` sh
+17:10:46.207 [error] Could not check origin for Phoenix.Socket transport.
+Origin of the request: http://localhost:4000
+```
+
+I hacked pentoslime-docker/config/prod.exs setting :check_origin to false.
+This is NOT a solution it should be set to the name of the target site I believe.
+Probably a bunch of other stuff should be correctly set up here for a produciton build. Here we're just checking docker.
+
+``` elixir
+config :pentoslime, PentoslimeWeb.Endpoint, cache_static_manifest: "priv/static/cache_manifest.json",
+check_origin: false
+```
+
+
+
+
+
+
 ## Generic instructions
 
 
