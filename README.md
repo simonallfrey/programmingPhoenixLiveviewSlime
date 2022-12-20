@@ -176,6 +176,48 @@ https://gist.github.com/zentetsukenz/43a428aff16738177d8a244582b306c3
 https://hexdocs.pm/phoenix/deployment.html
 https://hexdocs.pm/phoenix/releases.html
 
+Three changes here
+- MIX_ENV dev -> prod
+- use the release mechanism
+- Dockerise
+
+## dev -> prod issues
+
+File paths may change, 
+
+``` elixir
+# this returns the priv directory independent of build mode
+dest = :code.priv_dir(:pentoslime)
+ |> Path.join("static/images")
+ |> Path.join(Path.basename(path))
+ # |> IO.inspect
+# this will work only in dev mode.
+# dest = Path.join("priv/static/images", Path.basename(path))
+```
+ref https://stackoverflow.com/questions/43414104/read-files-in-phoenix-in-production-mode
+
+
+There are problems with cross site request forgery (csrf) protection for the prod build.
+
+``` sh
+17:10:46.207 [error] Could not check origin for Phoenix.Socket transport.
+Origin of the request: http://localhost:4000
+```
+
+I hacked `pentoslime-docker/config/prod.exs` setting `:check_origin` to false.
+This is NOT a solution it should be set to the name of the target site I believe.
+Probably a bunch of other stuff should be correctly set up here for a produciton build. Here we're just checking docker.
+
+``` elixir
+config :pentoslime, PentoslimeWeb.Endpoint, cache_static_manifest: "priv/static/cache_manifest.json",
+check_origin: false
+```
+### Release issues
+
+None so far...
+
+### Docker issues
+
 https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach
 
 TLDR: Use --network="host" in your docker run command, then 127.0.0.1 in your docker container will point to your docker host. Note: This mode only works on Docker for Linux, per the documentation.
@@ -288,23 +330,6 @@ Should probably use either docker stack or docker-compose and a docker-compose.y
 file to put the postgres and phoenix apps together and deal with networking directly.
 (certainly for a cloud deployment.)
 
-n.b. there are still some problems with the phoenix app not being able to find paths for product image files. I think this is because the directories were not created.
-
-there are problems with cross site request forgery (csrf) protection for the prod build.
-
-``` sh
-17:10:46.207 [error] Could not check origin for Phoenix.Socket transport.
-Origin of the request: http://localhost:4000
-```
-
-I hacked pentoslime-docker/config/prod.exs setting :check_origin to false.
-This is NOT a solution it should be set to the name of the target site I believe.
-Probably a bunch of other stuff should be correctly set up here for a produciton build. Here we're just checking docker.
-
-``` elixir
-config :pentoslime, PentoslimeWeb.Endpoint, cache_static_manifest: "priv/static/cache_manifest.json",
-check_origin: false
-```
 
 
 

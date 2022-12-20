@@ -83,7 +83,13 @@ defmodule PentoslimeWeb.ProductLive.FormComponent do
 
   defp upload_static_file(%{path: path}, socket) do
     # Plug in your production image file persistence implementation here!
-    dest = Path.join("priv/static/images", Path.basename(path))
+    # this returns the priv directory independent of build mode
+    dest = :code.priv_dir(:pentoslime)
+     |> Path.join("static/images")
+     |> Path.join(Path.basename(path))
+     # |> IO.inspect
+    # this will work only in dev mode.
+    # dest = Path.join("priv/static/images", Path.basename(path))
     File.cp!(path, dest)
     # dbg(path)
     # dbg(dest)
