@@ -331,9 +331,59 @@ file to put the postgres and phoenix apps together and deal with networking dire
 (certainly for a cloud deployment.)
 
 
+``` sh
+/ssh:s@airfitprovence.com#7822|sudo::/etc/apache2/sites-available/server.a2test.ga.conf
+```
+
+## move docker images to server
+https://stackoverflow.com/questions/23935141/how-to-copy-docker-images-from-one-host-to-another-without-using-a-repository
+
+on dev machine
+``` sh
+sudo docker save -o pd2 pentoslime-docker2
+sudo chmod o+r pd2
+scp pd2 user@server.com:pd2
+```
+
+on server
+``` sh
+sudo docker load -i pd2
+sudo docker run --network="host" -e SECRET_KEY_BASE=6DR+3g8zNX2xNgW/8Wr/aSaekvBY3L7miXdN7ueFmOokqUYTKnTB5F+defE+ZcCN -e DATABASE_URL=ecto://postgres:postgres@127.0.0.1:6543/pentoslime_dev pentoslime-docker2
+sudo ufw allow 4000
+```
+
+
+now head over to server.com:4000
+
+## Proxy server.
 
 
 
+``` sh
+sudo a2enmod rewrite
+sudo a2enmod proxy_http
+sudo a2enmod proxy_wstunnel
+```
+
+``` apacheconf
+<VirtualHost *:80>
+  ServerName localhost
+
+  <Location />
+    Order allow,deny
+    Allow from all
+    Require all granted
+  </Location>
+
+  RewriteEngine On
+  RewriteCond %{HTTP:Upgrade} =websocket [NC]
+  RewriteRule /(.*)    ws://localhost:4000/$1 [P,L]
+
+  ProxyPass / http://127.0.0.1:4000/ timeout=10
+  ProxyPassReverse / http://127.0.0.1:4000/ timeout=10
+
+</VirtualHost>
+```
 
 
 ## Generic instructions

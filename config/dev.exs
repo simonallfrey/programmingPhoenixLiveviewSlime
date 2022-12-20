@@ -60,6 +60,7 @@ config :pentoslime, PentoslimeWeb.Endpoint,
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/pentoslime_web/(live|views)/.*(ex)$",
+      ~r"lib/pentoslime_web/(live|views)/.*(ex)$",
       ~r"lib/pentoslime_web/templates/.*(eex)$"
     ]
   ]

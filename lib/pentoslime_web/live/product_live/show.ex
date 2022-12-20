@@ -16,7 +16,7 @@ defmodule PentoslimeWeb.ProductLive.Show do
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:product, Catalog.get_product!(id))
-     # |> IO.inspect
+     |> IO.inspect
     }
   end
 
