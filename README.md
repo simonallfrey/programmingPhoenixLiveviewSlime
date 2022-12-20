@@ -356,8 +356,21 @@ sudo ufw allow 4000
 now head over to server.com:4000
 
 ## Proxy server.
+The rewrite rule deals with websockets (initiated with an Upgrade header).
+The proxy rule deals with the http.
+
+This example is for http and websockets
+
+It works with apache providing tls2 encryption and the webapp using unencrypted
+transport.
+
+'magically', it makes wss connections which are resolved with ws through the
+tls proxy...
+(look in firefox/chrome dev tools )
 
 
+Here's a websockets RFC
+https://www.rfc-editor.org/rfc/rfc6455
 
 ``` sh
 sudo a2enmod rewrite
@@ -365,9 +378,13 @@ sudo a2enmod proxy_http
 sudo a2enmod proxy_wstunnel
 ```
 
+Use the root of some subdomain as the entrypoint.
+Using a 
+
+ref https://stackoverflow.com/questions/43552164/websocket-through-ssl-with-apache-reverse-proxy
 ``` apacheconf
 <VirtualHost *:80>
-  ServerName localhost
+  ServerName app-subdomain.domain.com
 
   <Location />
     Order allow,deny
@@ -377,13 +394,61 @@ sudo a2enmod proxy_wstunnel
 
   RewriteEngine On
   RewriteCond %{HTTP:Upgrade} =websocket [NC]
-  RewriteRule /(.*)    ws://localhost:4000/$1 [P,L]
+  RewriteRule /(.*)    ws://127.0.0.1:4000/$1 [P,L]
 
   ProxyPass / http://127.0.0.1:4000/ timeout=10
   ProxyPassReverse / http://127.0.0.1:4000/ timeout=10
 
 </VirtualHost>
 ```
+
+``` apacheconf
+<IfModule mod_ssl.c>
+SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
+<VirtualHost *:443>        
+        ServerName app-subdomain.domain.com
+
+  <Location />
+    Order allow,deny
+    Allow from all
+    Require all granted
+  </Location>
+
+  RewriteEngine On
+  RewriteCond %{HTTP:Upgrade} =websocket [NC]
+  RewriteRule /(.*)    ws://127.0.0.1:4000/$1 [P,L]
+
+  ProxyPass / http://127.0.0.1:4000/ timeout=10
+  ProxyPassReverse / http://127.0.0.1:4000/ timeout=10
+
+SSLCertificateFile /etc/letsencrypt/live/app-subdomain.domain.com/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/app-subdomain.domain.com/privkey.pem
+Include /etc/letsencrypt/options-ssl-apache.conf
+SSLUseStapling on
+</VirtualHost>
+</IfModule>
+```
+From: https://hexdocs.pm/phoenix/1.3.0-rc.1/phoenix_behind_proxy.html
+(I might get bitten by the following in the future...)
+
+Urls generated using a _url function from the HelloPhoenix.Router.Helpers module will include a url such as http://localhost:8080/users for user_url(conn, :index). To fix this we can use the url option:
+`config/prod.exs`
+``` elixir
+use Mix.Config
+...
+config :hello_phoenix, HelloPhoenix.Endpoint,
+  http: [port: 8080],
+  url: [host: "example.com", port: 80],
+  cache_static_manifest: "priv/static/manifest.json"
+...
+```
+Our url will now be http://example.com/users for the user_url(conn, :index) function. Note that the port is not present in the url. If the scheme is http and the port is 80, or the scheme is https and the port is 443, then the port will not be present in the url. In all other circumstances it will be presen
+
+## Using docker compose 
+(aside: `docker stack` is a way to _deploy_ preexisting docker images with a 
+`docker-compose.yml` it ignores build commands source: https://vsupalov.com/difference-docker-compose-and-docker-stack/)
+
+https://elixirforum.com/t/proposition-for-an-official-docker-compose-guide/47022
 
 
 ## Generic instructions
