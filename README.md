@@ -348,12 +348,44 @@ scp pd2 user@server.com:pd2
 on server
 ``` sh
 sudo docker load -i pd2
-sudo docker run --network="host" -e SECRET_KEY_BASE=6DR+3g8zNX2xNgW/8Wr/aSaekvBY3L7miXdN7ueFmOokqUYTKnTB5F+defE+ZcCN -e DATABASE_URL=ecto://postgres:postgres@127.0.0.1:6543/pentoslime_dev pentoslime-docker2
+sudo docker run --network="host" \
+-e SECRET_KEY_BASE=6DR+3g8zNX2xNgW/8Wr/aSaekvBY3L7miXdN7ueFmOokqUYTKnTB5F+defE+ZcCN \
+-e DATABASE_URL=ecto://postgres:postgres@127.0.0.1:6543/pentoslime_dev \
+pentoslime-docker2
 sudo ufw allow 4000
 ```
-
-
 now head over to server.com:4000
+
+### Tidying up docker images and containers.
+`docker build` uses intermediate containers.
+
+``` sh
+--force-rm true|false
+      Always remove intermediate containers, even after unsuccessful builds. The default is false.
+
+--rm true|false
+      Remove intermediate containers after a successful build. The default is true.
+```
+
+``` sh
+docker inspect <container-name-or-id>
+```
+
+Remind yourself of your perl one-liners... https://learnbyexample.github.io/learn_perl_oneliners/line-processing.html
+``` sh
+# remove all containers not matching 'pento' somewhere.
+sudo docker ps -a | perl -nae '/pento/ || `sudo docker rm $F[0]`'
+
+# remove all images matching '<none>' somewhere
+sudo docker images | perl -nae '/<none>/ && `sudo docker rmi $F[2]`'
+
+# remove all images matchin '10 months ago' somewhere
+sudo docker images | perl -nae '/10 months ago/ && `sudo docker rmi $F[2]`'
+
+# get commands of containers (to id build artifacts)
+sudo docker ps -a --no-trunc | perl -nae '/\"(.*)\"/ && print "$1\n"'
+```
+
 
 ## Proxy server.
 The rewrite rule deals with websockets (initiated with an Upgrade header).
@@ -449,6 +481,15 @@ Our url will now be http://example.com/users for the user_url(conn, :index) func
 `docker-compose.yml` it ignores build commands source: https://vsupalov.com/difference-docker-compose-and-docker-stack/)
 
 https://elixirforum.com/t/proposition-for-an-official-docker-compose-guide/47022
+
+## postgres backup...
+
+https://www.postgresql.org/docs/current/backup.html
+
+Gosh, it's that darn 26.3 which is wanted...
+
+https://alonge.medium.com/how-to-setup-a-realtime-database-replication-and-backup-on-linux-servers-6afaf577a8ee
+
 
 
 ## Generic instructions
