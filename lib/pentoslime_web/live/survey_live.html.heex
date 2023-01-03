@@ -1,3 +1,18 @@
 <section class="row">
-<h2>Survey</h2>
+    <Component.title survey_title = "SJA Survey"/>
 </section>
+
+
+<%= for i <- ["1SJA","2MJA","3other"] do %>
+    <Component.title survey_title = {"#{i} subSurvey"}/>
+<% end %>
+
+<Component.hero content="Hello from a function component">
+    <div>This is the inner block</div>
+</Component.hero>
+
+<%= if @demographic do %>
+    <DemographicLive.Show.details demographic={@demographic} />
+<%= else %>
+    <h2>Demographic Form coming soon!</h2>
+<%= end %>

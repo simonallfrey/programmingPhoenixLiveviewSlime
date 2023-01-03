@@ -2,6 +2,7 @@ defmodule PentoslimeWeb.SurveyLive do
   use PentoslimeWeb, :live_view
   alias Pentoslime.{Survey}
   alias PentoslimeWeb.DemographicLive
+  alias __MODULE__.Component
 
   @impl true
   def mount(_params, _session, socket) do

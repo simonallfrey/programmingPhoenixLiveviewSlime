@@ -619,6 +619,8 @@ iex> Survey.update_rating(r,%{rating_attrs| stars: 4})
 ```
 
 ## Associations and Preloading queries
+p160 of Programming Phoenix Liveview  
+
 See p49 "Adding Associations to Schemas" of the Programming Ecto book.
 
 At the database level, we connect two tables with a foreign key: e.g. artist_id column in
@@ -777,9 +779,73 @@ iex> Catalog.list_products_with_user_rating(user)
 ]
 iex> 
 ```
+p164 PPLV
 
 `live_session`
 - https://fly.io/phoenix-files/live-session/
 
 - https://fly.io/phoenix-files/
 
+p166 assign_new will only assign `:current_user` if it's not already present in `socket`,
+i.e. it will only assign _new_ data.
+
+``` elixir
+socket = assign_new(socket, :current_user, fn ->
+            Accounts.get_user_by_session_token(user_token)
+        end)
+```
+
+`SPC-m-p` preview markdow   n
+
+snap Firefox doesn't mount the system /tmp so for emacs `(setq browse-url-browser-function 'browse-url-chrome)`
+https://superuser.com/questions/1748689/file-tmp-in-firefox-does-not-show-contents-of-tmp
+
+
+### p173 PPLV Programming function components.
+
+
+This is the tightest way I've found to use anonymous functions in pipelines.
+```elixir
+iex> "s@j.a" |> Accounts.get_user_by_email |> (fn(x)->x.id end).()
+2
+iex> "s@j.a" |> Accounts.get_user_by_email |> (&(&1.id)).()
+2
+```
+
+(maybe) Check out http://elixir-recipes.github.io/
+
+Quickly alias multiple names: `alias Pento.{Accounts, Survey, Catalog}`
+
+see https://stackoverflow.com/questions/39637239/alias-multiple-names-in-the-same-line
+
+
+Function components get their own assigns as you can check with:
+```elixir
+  def title(assigns) do
+    ~H"""
+    <h2> <%= @survey_title %> </h2>
+    Assigns are: <%= inspect(assigns) %>
+    """
+  end
+```
+
+### The `@` symbol in embeded elixir (EEx,HEEx,sHEEx) 
+
+https://hexdocs.pm/eex/1.12.3/EEx.html
+
+EEx.SmartEngine also adds some macros to your template. An example is the @ macro which allows easy data access in a template:
+
+```elixir
+EEx.eval_string("<%= @foo %>", assigns: [foo: 1])
+"1"
+```
+
+In other words, `<%= @foo %>` translates to:
+
+```elixir
+<%= {:ok, v} = Access.fetch(assigns, :foo); v %>
+```
+
+The assigns extension is useful when the number of variables required by the template is not specified at compilation time.
+
+### 
