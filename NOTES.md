@@ -476,7 +476,7 @@ The difference between those is mostly the amount of data sent over the wire:
 
 An easy rule of thumb is to stick with `live_redirect/2` and `push_redirect/2` and use the patch helpers only in the cases where you want to minimize the amount of data sent when navigating within the same LiveView (for example, if you want to change the sorting of a table while also updating the URL).
 
-# Chapter 6 Function Components
+## Chapter 6 Function Components
 
 About database indicies:
 https://stackoverflow.com/questions/1108/how-does-database-indexing-work
@@ -547,6 +547,19 @@ iex> {:ok, user} = Accounts.register_user(user_attrs)
    updated_at: ~N[2022-12-14 14:35:35],
    ...
  >}
+iex> user = "s2@j.a" |> Accounts.get_user_by_email 
+iex> Accounts.reset_user_password(user, %{password: "letmeinletmein2", password_confirmation: "letmeinletmein2"})
+{:ok,
+ #Pentoslime.Accounts.User<
+   __meta__: #Ecto.Schema.Metadata<:loaded, "users">,
+   id: 4,
+   email: "s2@j.a",
+   confirmed_at: nil,
+   inserted_at: ~N[2022-12-14 14:35:35],
+   updated_at: ~N[2023-01-04 13:23:04],
+   ...
+ >}
+
 iex> alias Pentoslime.Survey
 iex> demo_attrs=%{user_id: user.id, gender: "male", year_of_birth: 1973}
 iex> Survey.create_demographic(demo_attrs)
@@ -618,7 +631,7 @@ iex> Survey.update_rating(r,%{rating_attrs| stars: 4})
 
 ```
 
-## Associations and Preloading queries
+### Associations and Preloading queries
 p160 of Programming Phoenix Liveview  
 
 See p49 "Adding Associations to Schemas" of the Programming Ecto book.
@@ -848,4 +861,8 @@ In other words, `<%= @foo %>` translates to:
 
 The assigns extension is useful when the number of variables required by the template is not specified at compilation time.
 
-### 
+## Chapter 7 Live Components 
+
+
+Aside: `@impl true` was a recommended way to indicate that the following function
+implements a behaviour (is a callback)  it's now deprecated https://hexdocs.pm/elixir/typespecs.html#behaviours

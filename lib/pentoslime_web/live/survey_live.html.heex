@@ -7,12 +7,15 @@
     <Component.title survey_title = {"#{i} subSurvey"}/>
 <% end %>
 
-<Component.hero content="Hello from a function component">
-    <div>This is the inner block</div>
-</Component.hero>
 
 <%= if @demographic do %>
     <DemographicLive.Show.details demographic={@demographic} />
 <%= else %>
-    <h2>Demographic Form coming soon!</h2>
+    <.live_component module={DemographicLive.Form}
+        id = "demographic-form"
+        current_user={@current_user} />
 <%= end %>
+
+<Component.hero content="Testing a function component">
+    <div>This is the inner block</div>
+</Component.hero>

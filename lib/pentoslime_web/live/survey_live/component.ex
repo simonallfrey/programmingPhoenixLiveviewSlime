@@ -2,7 +2,6 @@ defmodule PentoslimeWeb.SurveyLive.Component do
   use Phoenix.Component
   def hero(assigns) do
     ~H"""
-    Assigns are: <%= inspect(assigns) %>
     <h2>
     content: <%= @content %>
     </h2>
@@ -10,6 +9,10 @@ defmodule PentoslimeWeb.SurveyLive.Component do
     <h3>
     slot: <%= render_slot(@inner_block) %>
     </h3>
+
+    <h4>
+    Assigns are: <%= inspect(assigns) %>
+    </h4>
     """
   end
   def title(assigns) do

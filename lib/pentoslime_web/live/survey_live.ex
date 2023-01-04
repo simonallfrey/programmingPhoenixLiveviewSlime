@@ -2,6 +2,7 @@ defmodule PentoslimeWeb.SurveyLive do
   use PentoslimeWeb, :live_view
   alias Pentoslime.{Survey}
   alias PentoslimeWeb.DemographicLive
+  alias PentoslimeWeb.DemographicLive.Form
   alias __MODULE__.Component
 
   @impl true
