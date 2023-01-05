@@ -21,6 +21,11 @@ defmodule PentoslimeWeb.SurveyLive do
   end
 
 @impl true
+  def handle_info({:updated_demographic, demographic}, socket) do
+    {:noreply, handle_demographic_updated(socket, demographic)}
+  end
+
+@impl true
   def handle_info({:created_rating, updated_product, product_index}, socket) do
     {:noreply, handle_rating_created(socket, updated_product, product_index)}
   end
@@ -36,6 +41,12 @@ defmodule PentoslimeWeb.SurveyLive do
   def handle_demographic_created(socket, demographic) do
     socket
     |> put_flash(:info, "Demographic created successfully")
+    |> assign(:demographic, demographic)
+  end
+
+  def handle_demographic_updated(socket, demographic) do
+    socket
+    |> put_flash(:info, "Demographic updated successfully")
     |> assign(:demographic, demographic)
   end
 
