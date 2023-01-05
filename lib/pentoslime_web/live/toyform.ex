@@ -3,10 +3,8 @@ defmodule PentoslimeWeb.Toystruct2 do
 end
 
 defmodule PentoslimeWeb.ToyformLive do
-  # use Phoenix.LiveView, layout: {PentoslimeWeb.LayoutView, "live.html"}
   use PentoslimeWeb, :live_view2
-  # :live_view2 to use heex rather than sheex
-  # import Ecto.Changeset
+  # :live_view2 to use ~H heex rather than sheex
   alias PentoslimeWeb.Toystruct2
 
   def mount(_params, session, socket) do
