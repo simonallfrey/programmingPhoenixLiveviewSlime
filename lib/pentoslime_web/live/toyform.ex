@@ -10,6 +10,8 @@ defmodule PentoslimeWeb.ToyformLive do
   alias PentoslimeWeb.Toystruct2
 
   def mount(_params, session, socket) do
+    #create a changeset backed by a struct (rather than schema)
+    # https://hexdocs.pm/ecto/Ecto.Changeset.html
     toystruct = %Toystruct2{}
     types = %{name: :string}
     params = %{"name" => "Simon"}
@@ -46,14 +48,17 @@ defmodule PentoslimeWeb.ToyformLive do
 
   def handle_event("validate", metadata, socket) do
     metadata |> IO.inspect
+    # metadata named as lowercase of struct of changeset of form.
+    # The struct is PentoslimeWeb.Toystruct2
+    # so the name of the metadata is "toystruct2"
+    # %{"_target" => ["toystruct2", "name"], "toystruct2" => %{"name" => "Simo"}}
     {:noreply, socket}
   end
 
   def handle_event("save", metadata, socket) do
     {:noreply,
      socket
-     # |> put_flash(:info, "METADATA was #{metadata}")
-     |> assign(:oldmetadata, metadata |> IO.inspect)
+     |> put_flash(:info, "METADATA was #{inspect(metadata)}")
     }
   end
 

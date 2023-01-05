@@ -879,3 +879,7 @@ Delete the demographic associated with a user.
 ```elixir
 iex> "s5@j.a" |> Accounts.get_user_by_email |> Survey.get_demographic_by_user |> Survey.delete_demographic
 ```
+
+Aside: The handle_event("event",metadata,socket) callback when used for a form has metadata named 
+as the lowercase of the struct( or schema, which is the same thing) of the changeset of the form(!) 
+See: `./lib/pentoslime_web/live/toyform.ex` 
