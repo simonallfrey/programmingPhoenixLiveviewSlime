@@ -85,6 +85,7 @@ defmodule PentoslimeWeb.Router do
     # share layout and authentication logic with live_session
     live_session :default, on_mount: PentoslimeWeb.UserAuthLive do
 
+      live "/toyform", ToyformLive
       live "/guess", WrongLive
       live "/guess2", WrongLive2
       live "/promo", PromoLive
