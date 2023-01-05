@@ -866,3 +866,16 @@ The assigns extension is useful when the number of variables required by the tem
 
 Aside: `@impl true` was a recommended way to indicate that the following function
 implements a behaviour (is a callback)  it's now deprecated https://hexdocs.pm/elixir/typespecs.html#behaviours
+
+Rerendering triggers
+
+The only reason to re-render the page is if its contents change. The contents of a LiveView are based on its assigns.
+So the usual way to re-render a LiveView is to change the value in one of the assigns.
+
+https://elixirforum.com/t/how-to-force-liveview-to-re-render-a-page/37180/4
+
+
+Delete the demographic associated with a user.
+```elixir
+iex> "s5@j.a" |> Accounts.get_user_by_email |> Survey.get_demographic_by_user |> Survey.delete_demographic
+```

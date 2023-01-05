@@ -32,3 +32,19 @@ pentoslime-*.tar
 npm-debug.log
 /assets/node_modules/
 
+/Dockerfile.bak
+/NOTES.html
+/docker-compose.yml.bak
+/lib/pentoslime/release.ex
+/mix.lock.bak
+/outfile
+/pd2
+/priv/static/images/phoenix-5bd99a0d17dd41bc9d9bf6840abcc089.png
+/priv/static/favicon-a8ca4e3a2bb8fea46a9ee9e102e7d3eb.ico
+/priv/static/images/default-thumbnail-c5a00375d647591a14dd36e31151acb1.jpg
+/priv/static/images/live_view_upload*
+/priv/static/robots-9e2c81b0855bbff2baa8371bc4a78186.txt
+/priv/static/robots-9e2c81b0855bbff2baa8371bc4a78186.txt.gz
+/priv/static/robots.txt.gz
+/tmp.txt
+/tmp/

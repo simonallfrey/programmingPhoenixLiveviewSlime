@@ -1,0 +1,21 @@
+<section class="row">
+    <Component.title survey_title = "SJA Survey"/>
+</section>
+
+
+<%= for i <- ["1SJA","2MJA","3other"] do %>
+    <Component.title survey_title = {"#{i} subSurvey"}/>
+<% end %>
+
+
+<%= if @demographic do %>
+    <DemographicLive.Show.details demographic={@demographic} />
+<%= else %>
+    <.live_component module={DemographicLive.Form}
+        id = "demographic-form"
+        current_user={@current_user} />
+<%= end %>
+
+<Component.hero content="Testing a function component">
+    <div>This is the inner block</div>
+</Component.hero>
