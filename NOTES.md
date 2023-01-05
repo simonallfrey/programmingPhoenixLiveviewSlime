@@ -949,7 +949,7 @@ To account for this:
 Edit `lib/pentoslime_web/live/survey_live.html.heex`
 ```heex
 -  <%= if @demographic do %>
-+  <%= if @demographic.gender && @demographic.year_of_birth && @demographic.education do %>
++  <%= if @demographic && @demographic.gender && @demographic.year_of_birth && @demographic.education do %>
 ```
 
 Now that the form may be triggered with a partial demographic, we want existing fields correctly initialized.

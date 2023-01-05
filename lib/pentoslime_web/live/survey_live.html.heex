@@ -2,7 +2,7 @@
   <h1>Survey</h1>
 </section>
 <section>
-  <%= if @demographic.gender && @demographic.year_of_birth && @demographic.education do %>
+  <%= if @demographic && @demographic.gender && @demographic.year_of_birth && @demographic.education do %>
     <DemographicLive.Show.details demographic={@demographic} />
     <RatingLive.Index.products products={@products}
                     current_user={@current_user |> IO.inspect(label: :assigned)}
