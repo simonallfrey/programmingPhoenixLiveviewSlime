@@ -954,15 +954,64 @@ Edit `lib/pentoslime_web/live/survey_live.html.heex`
 
 Now that the form may be triggered with a partial demographic, we want existing fields correctly initialized.
 (Before we knew that the data were empty.)
+Furthermore we need to know to either create or update the demographic.
 ```elixir
--    assign(socket, :demographic, %Demographic{user_id: current_user.id})
-+    demographic =
-+      Survey.get_demographic_by_user(current_user)
-+      || %Demographic{user_id: current_user.id}
-+    assign(socket, :demographic, demographic)
+-     assign(socket, :demographic, %Demographic{user_id: current_user.id})
++      if demographic = Survey.get_demographic_by_user(current_user) do
++        socket
++        |> assign(:demographic, demographic)
++        |> assign(:is_update, true)
++        |> IO.inspect
++      else
++        socket
++        |> assign(:demographic, %Demographic{user_id: current_user.id})
++        |> IO.inspect
++      end
+...
+
++   def handle_event("save", %{"demographic" => demographic_params},
++     %{assigns: %{is_update: _, demographic: demographic}} = socket) do
++     {:noreply, update_demographic(socket, demographic, demographic_params)}
++   end
++
+    def handle_event("save", %{"demographic" => demographic_params}, socket) do
+-     {:noreply, save_demographic(socket, demographic_params)}
++     {:noreply, create_demographic(socket, demographic_params)}
+    end
+...
+-   defp save_demographic(socket, demographic_params) do
+-     case Survey.create_demographic(demographic_params) do
++   defp update_demographic(socket, demographic, demographic_params) do
++     case Survey.update_demographic(demographic,demographic_params) |> IO.inspect do
++       {:ok, demographic} ->
++         send(self(), {:updated_demographic, demographic})
++         socket
++
++       {:error, %Ecto.Changeset{} = changeset} ->
++         assign(socket, changeset: changeset)
++     end
++   end
++
++   defp create_demographic(socket, demographic_params) do
++     case Survey.create_demographic(demographic_params) |> IO.inspect do
 ```
 
+And finally in `lib/pentoslime_web/live/survey_live.ex` we need to handle the new message.
 
+```elixir
++@impl true
++  def handle_info({:updated_demographic, demographic}, socket) do
++    {:noreply, handle_demographic_updated(socket, demographic)}
++  end
++
+... 
++  def handle_demographic_updated(socket, demographic) do
++    socket
++    |> put_flash(:info, "Demographic updated successfully")
++    |> assign(:demographic, demographic)
++  end
++
+```
 
 
 ## Part III Extend Liveview
