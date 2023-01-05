@@ -2,15 +2,13 @@
   <h1>Survey</h1>
 </section>
 <section>
-  <%= if @demographic do %>
+  <%= if @demographic.gender && @demographic.year_of_birth && @demographic.education do %>
     <DemographicLive.Show.details demographic={@demographic} />
     <RatingLive.Index.products products={@products}
                     current_user={@current_user |> IO.inspect(label: :assigned)}
                     demographic={@demographic} />
-
   <% else %>
-
-<.live_component module={DemographicLive.Form}
+    <.live_component module={DemographicLive.Form}
         id={"demographic-form-#{@current_user.id}"}
         current_user={@current_user} />
   <% end %>

@@ -15,7 +15,10 @@ defmodule PentoslimeWeb.DemographicLive.Form do
 
    defp assign_demographic(
       %{assigns: %{current_user: current_user}} = socket) do
-     assign(socket, :demographic, %Demographic{user_id: current_user.id})
+     demographic =
+       Survey.get_demographic_by_user(current_user)
+       || %Demographic{user_id: current_user.id}
+     assign(socket, :demographic, demographic)
    end
 
    defp assign_changeset(%{assigns: %{demographic: demographic}} = socket) do

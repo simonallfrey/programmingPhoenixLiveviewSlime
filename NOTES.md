@@ -880,6 +880,91 @@ Delete the demographic associated with a user.
 iex> "s5@j.a" |> Accounts.get_user_by_email |> Survey.get_demographic_by_user |> Survey.delete_demographic
 ```
 
-Aside: The handle_event("event",metadata,socket) callback when used for a form has metadata named 
+Aside: The `handle_event("event",metadata,socket)` callback when used for a form has metadata named 
 as the lowercase of the struct( or schema, which is the same thing) of the changeset of the form(!) 
-See: `./lib/pentoslime_web/live/toyform.ex` 
+See: `./lib/pentoslime_web/live/toyform.ex` which also demonstrates multiple modules in one file.
+
+### p202 PPLV Give it a try.
+
+Add Education level to Demographic schema and corresponding database.
+Update demographic form to reflect these changes.
+
+
+use codegeneration to make sure migration file name is correctly ordered.
+```bash
+$mix ecto.gen.migration add_education_to_demographics
+Generated pentoslime app
+* creating priv/repo/migrations/20230105195506_add_education_to_demographics.exs
+```
+and edit
+```elixir
+  def change do
+    alter table(:demographics) do
+      add :education, :string
+    end
+  end
+```
+```bash
+$ mix ecto.migrate
+21:09:16.750 [info] == Running 20230105195506 Pentoslime.Repo.Migrations.AddEducationToDemographics.change/0 forward
+21:09:16.757 [info] alter table demographics
+21:09:16.772 [info] == Migrated 20230105195506 in 0.0s
+```
+
+Now edit `./lib/pentoslime/survey/demographic.ex`
+```elixir
+   schema "demographics" do
+     field :gender, :string
++    field :education, :string
+     field :year_of_birth, :integer
+...
+   def changeset(demographic, attrs) do
+     demographic
+-    |> cast(attrs, [:gender, :year_of_birth, :user_id])
+-    |> validate_required([:gender, :year_of_birth, :user_id])
++    |> cast(attrs, [:education, :gender, :year_of_birth, :user_id])
++    |> validate_required([:education, :gender, :year_of_birth, :user_id])
++    |> validate_inclusion(
++    :education,
++    ["high school", "batchelor's degree", "graduate degree", "other", "prefer not to say"]
++    )
+...
+```
+Now edit `lib/pentoslime_web/live/demographic_live/form.html.heex`
+```heex
++  <%= label f, :education %>
++  <%= select f, :education, ["high school", "batchelor's degree", "graduate degree", "other", "prefer not to say"] %>
++  <%= error_tag f, :education %>
+```
+Restart server now if you have not already done so...
+
+Now edit`lib/pentoslime_web/live/demographic_live/show.ex` 
+```heex
++           <li>Education: <%= @demographic.education %></li>
+```
+Now, since we have changed the schema, the database may have some old demographics with a nil education field.
+These need to be completed, so we should trigger the form if any required fields are not present.
+To account for this:
+
+Edit `lib/pentoslime_web/live/survey_live.html.heex`
+```heex
+-  <%= if @demographic do %>
++  <%= if @demographic.gender && @demographic.year_of_birth && @demographic.education do %>
+```
+
+Now that the form may be triggered with a partial demographic, we want existing fields correctly initialized.
+(Before we knew that the data were empty.)
+```elixir
+-    assign(socket, :demographic, %Demographic{user_id: current_user.id})
++    demographic =
++      Survey.get_demographic_by_user(current_user)
++      || %Demographic{user_id: current_user.id}
++    assign(socket, :demographic, demographic)
+```
+
+
+
+
+## Part III Extend Liveview
+
+## Chapter 8 Build an interactive Dashboard

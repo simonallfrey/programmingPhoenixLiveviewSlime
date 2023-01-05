@@ -7,6 +7,10 @@
   phx_target={@myself}
   id={@id}>
 
+  <%= label f, :education %>
+  <%= select f, :education, ["high school", "batchelor's degree", "graduate degree", "other", "prefer not to say"] %>
+  <%= error_tag f, :education %>
+
   <%= label f, :gender %>
   <%= select f, :gender, ["female", "male", "other", "prefer not to say"] %>
   <%= error_tag f, :gender %>

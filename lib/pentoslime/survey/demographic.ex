@@ -24,6 +24,7 @@ defmodule Pentoslime.Survey.Demographic do
 
   schema "demographics" do
     field :gender, :string
+    field :education, :string
     field :year_of_birth, :integer
     # by convention, with the following Ecto will assume that the
     # demographics table has a :user_id that provides the foreign key
@@ -37,8 +38,12 @@ defmodule Pentoslime.Survey.Demographic do
   @doc false
   def changeset(demographic, attrs) do
     demographic
-    |> cast(attrs, [:gender, :year_of_birth, :user_id])
+    |> cast(attrs, [:education, :gender, :year_of_birth, :user_id])
     |> validate_required([:gender, :year_of_birth, :user_id])
+    |> validate_inclusion(
+    :education,
+    ["high school", "batchelor's degree", "graduate degree", "other", "prefer not to say"]
+    )
     |> validate_inclusion(
     :gender,
     ["male", "female", "other", "prefer not to say"]
